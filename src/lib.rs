@@ -2,12 +2,12 @@
 
 #[macro_use] extern crate rocket;
 
-#[get("/")]
-fn index() -> &'static str {
-    "hello, world!"
-}
+mod app;
 
 // 加载路由
 pub fn mount() -> rocket::Rocket {
-    rocket::ignite().mount("/", routes![index])
+    let r = rocket::ignite();
+    r.mount("/blog/author", route![app::blog::author::info]);
+//    rocket::ignite().mount("/", routes![app::blog::author::info])
+    r
 }
