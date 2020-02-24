@@ -7,7 +7,7 @@ create table articles (
     html_body text default '',
     book_id integer references books(id),
     tags text[],
-    created_time timestamp default current_timestamp,
-    updated_time timestamp default current_timestamp,
-    deleted_time timestamp
+    parent_id integer references catalogs(id),
+    created_at timestamp default current_timestamp not null,
+    updated_at timestamp default current_timestamp not null
 )

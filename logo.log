@@ -1,0 +1,25 @@
+Configured for development.
+    => address: localhost
+    => port: 8081
+    => log: normal
+    => workers: 16
+    => secret key: generated
+    => limits: forms = 32KiB
+    => keep-alive: 5s
+    => tls: disabled
+    => [extra] databases: { pg_sql = { url = "postgres://test:123456@localhost:5432/rust_test" } }
+Mounting /v1/author:
+    => GET /v1/author (info)
+Rocket has launched from http://localhost:8081
+GET /v1/author text/html:
+    => Matched: GET /v1/author (info)
+    => Error: Attempted to retrieve unmanaged state!
+    => Outcome: Failure
+    => Warning: Responding with 500 Internal Server Error catcher.
+    => Response succeeded.
+GET /v1/author text/html:
+    => Matched: GET /v1/author (info)
+    => Error: Attempted to retrieve unmanaged state!
+    => Outcome: Failure
+    => Warning: Responding with 500 Internal Server Error catcher.
+    => Response succeeded.

@@ -7,9 +7,9 @@ table! {
         html_body -> Nullable<Text>,
         book_id -> Nullable<Int4>,
         tags -> Nullable<Array<Text>>,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        parent_id -> Nullable<Int4>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -18,11 +18,10 @@ table! {
         id -> Int4,
         author -> Varchar,
         email -> Varchar,
-        birth -> Nullable<Date>,
+        birth -> Date,
         introduce -> Nullable<Text>,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -32,9 +31,8 @@ table! {
         book_name -> Varchar,
         description -> Nullable<Varchar>,
         tags -> Nullable<Array<Text>>,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -45,9 +43,8 @@ table! {
         rank -> Int4,
         grade -> Int4,
         parent_id -> Nullable<Int4>,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -61,9 +58,8 @@ table! {
         parent_id -> Int4,
         child_comment_id -> Nullable<Int4>,
         ip -> Varchar,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -75,9 +71,8 @@ table! {
         content -> Text,
         md_content -> Text,
         ip -> Varchar,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -85,13 +80,13 @@ table! {
     tags (id) {
         id -> Int4,
         tag -> Varchar,
-        created_time -> Nullable<Timestamp>,
-        updated_time -> Nullable<Timestamp>,
-        deleted_time -> Nullable<Timestamp>,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
 joinable!(articles -> books (book_id));
+joinable!(articles -> catalogs (parent_id));
 joinable!(catalogs -> books (book_id));
 joinable!(child_comments -> comments (parent_id));
 
