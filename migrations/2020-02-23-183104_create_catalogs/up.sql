@@ -1,11 +1,10 @@
-create table articles (
+-- Your SQL goes here
+create table catalogs(
     id serial primary key,
-    title varchar not null,
-    description varchar default '',
-    md_body text default '',
-    html_body text default '',
     book_id integer references books(id),
-    tags_id text[],
+    rank integer not null,
+    grade integer not null,
+    parent_id integer references catalogs(id),
     created_time timestamp default current_timestamp,
     updated_time timestamp default current_timestamp,
     deleted_time timestamp

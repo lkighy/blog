@@ -6,5 +6,5 @@ create table catalogs(
     parent_id integer references catalogs(id),
     created_time timestamp default current_timestamp,
     updated_time timestamp default current_timestamp,
-    deleted_time timestamp,
+    deleted_time timestamp
 )
