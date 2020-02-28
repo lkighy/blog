@@ -1,36 +1,38 @@
-#![feature(proc_macro_hygiene, decl_macro)]
-
-use rocket_contrib::json::{Json, JsonValue};
+use rocket_contrib::json::JsonValue;
+use diesel::prelude::*;
 
 extern crate diesel;
 
 use crate::PgDbConn;
 use crate::models::*;
+use crate::app;
+use crate::schema::authors::dsl::*;
 
-use diesel::prelude::*;
-
-
-#[get("/")]
-pub fn info(conn: PgDbConn) -> String {
-    use crate::schema::authors::dsl::*;
-
-    let mut s = String::from("");
+#[post("/")]
+pub fn info(conn: PgDbConn) -> JsonValue {
 
     let results = authors
-//        .limit(1)
-        .load::<Author>(&*conn);
+//        .load::<Author>(&*conn);
+        .get_result::<Author>(&*conn);
 
-    match results {
-        Ok(res) => println!("{:?}", res),
-        Err(e) => { s.push_str(&e.to_string())},
-    }
-
-    s
-//    let res = match resultsOption {
-//        Ok(results) => results,
-//        Err(e) => panic!("error"),
-//    };
-
-//    Json!(results)
+    let r = match results {
+//        Ok(res) => json!(res),
+        Ok(res) => {
+            json!(app::FormatJson {
+                code: 200,
+                msg: String::new(),
+                data: res,
+            })
+        },
+//        Ok(res) => panic!("test 出错"),
+        Err(e) => {
+            json!(app::FormatJson {
+                code: 500,
+                msg: String::from(format!("{:?}", e)),
+                data: String::new()
+            })
+        },
+    };
+    r
 }
 

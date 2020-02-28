@@ -17,11 +17,19 @@ pub struct PgDbConn(databases::diesel::PgConnection);
 pub mod schema;
 pub mod models;
 mod app;
+//mod fairings;
+
+// 捕获器 catch
+// 附加 附加数据库 fairing 等
+// 路由
+// 请求保护
 
 // 加载路由
 pub fn mount() -> rocket::Rocket {
     rocket::ignite()
-        .attach(PgDbConn::fairing())
+        .register(catchers![app::not_found, app::server_error])
+        .attach(PgDbConn::fairing()) // 挂在数据库
+//        .attach(fairings::ResponseJson::default())
         .mount("/v1/author", routes![app::v1::author::info])
 //    rocket::ignite().mount("/", routes![app::v1::author::info])
 }

@@ -3,3 +3,4 @@
 .env
 /.idea
 .~lock.数据库 设计.xlsx#
+*.log
