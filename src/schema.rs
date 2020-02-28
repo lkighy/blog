@@ -18,8 +18,10 @@ table! {
         id -> Int4,
         author -> Varchar,
         email -> Varchar,
+        hobby -> Varchar,
         birth -> Date,
         introduce -> Nullable<Text>,
+        lines -> Jsonb,
         created_at -> Timestamp,
         updated_at -> Timestamp,
     }

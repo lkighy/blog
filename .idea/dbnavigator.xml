@@ -32,9 +32,17 @@
   </component>
   <component name="DBNavigator.Project.DatabaseConsoleManager">
     <connection id="385e3fc6-7234-4212-8778-d1d5e485a163">
-      <console name="rust_test" type="STANDARD" schema="public" session="Main">insert into authors (author, email) values ('小白', '10000@gmail.com');
+      <console name="rust_test" type="STANDARD" schema="public" session="Main"><![CDATA[insert into authors (author, email) values ('小白', '10000@gmail.com');
 
-select * from authors;</console>
+select * from authors;
+
+drop table authors;
+drop table articles;
+drop table child_comments;
+drop table comments;
+drop table catalogs;
+drop table books;
+drop table tags;]]></console>
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
