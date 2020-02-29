@@ -13,3 +13,4 @@ pub struct Author {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
+
