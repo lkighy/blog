@@ -2,6 +2,7 @@
   "redis_connection": "redis://127.0.0.1:6379",
   "mongodb_hostname": "localhost",
   "mongodb_port": 27017,
+  "mongodb_name": "test",
   "app_hostname": "127.0.0.1",
   "app_port": "8787",
   "session_name": "SESSION"
