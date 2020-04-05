@@ -414,6 +414,7 @@ version = "0.1.0"
 dependencies = [
  "actix-rt",
  "actix-web",
+ "lazy_static",
  "mongodb",
  "redis",
  "serde",

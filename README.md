@@ -4,7 +4,8 @@
 
 ### rust 库
 
-- rocket -- http 框架
+- ~~rocket -- http 框架~~
+-- actix-web -- http 框架
 
 ### 数据库
 
