@@ -1,4 +1,5 @@
-use blog::mount;
+mod conf;
 fn main() {
-    mount().launch();
+    println!("Hello, world!");
+    println!("conf: ", conf::conf)
 }
