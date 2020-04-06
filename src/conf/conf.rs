@@ -31,7 +31,11 @@ lazy_static! {
     // redis
     // mongodb
     // pub static ref MONGO:Conf = {
-    //     let client = Clent::connect(CONF.mongodb_hostname, CONF.mongodb_port)
+    //     let client = Clent::connect(CONF.mongodb_hostname, CONF.mongodb_port).expect("");
     // }
 }
 
+// fn init() {
+//     let client = Clent::connect(CONF.mongodb_hostname, CONF.mongodb_port).expect("连接 mongodb 失败");
+//
+// }
