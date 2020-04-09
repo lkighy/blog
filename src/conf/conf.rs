@@ -6,7 +6,7 @@ use serde_json;
 use std::io::Read;
 use lazy_static::lazy_static;
 
-use mongodb::{Client};
+use mongodb::{Client, Database};
 
 #[derive(Deserialize, Debug)]
 pub struct Conf {
@@ -27,13 +27,19 @@ lazy_static! {
         let conf_str: &'static str = Box::leak(conf_str.into_boxed_str());
         serde_json::from_str(&conf_str).expect("配置解析失败")
     };
-    // 初始化数据库
-    // redis
-    // mongodb
-    // pub static ref MONGO:Conf = {
-    //     let client = Clent::connect(CONF.mongodb_hostname, CONF.mongodb_port).expect("");
-    // }
+    pub static ref DB:Database = {
+        println!("初始化mongodb");
+        // let client = Client::with_uri_str(format!("mongodb://{}:{}", CONF.mongodb_hostname, CONF.mongodb_port)).expect("连接mongodb 失败");
+        let client = Client::with_uri_str(format!("mongodb://{}:{}", "127.0.0.1", 27017)).expect("连接mongodb 失败");
+        client.database(CONF.mongodb_name)
+    };
 }
+
+// fn init() {
+//     let client = Client::with_uri_str(format!("mongodb://{}:{}", CONF.mongodb_hostname, CONF.mongodb_port)).expect("连接mongodb 失败");
+//     let db = client.database(CONF.mongodb_name);
+// }
+
 
 // fn init() {
 //     let client = Clent::connect(CONF.mongodb_hostname, CONF.mongodb_port).expect("连接 mongodb 失败");
