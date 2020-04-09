@@ -1,6 +1,5 @@
 // pub mod conf;
 extern crate redis;
-// use redis::Commands;
 use std::fs::File;
 use serde::{Deserialize};
 use serde_json;
@@ -9,7 +8,7 @@ use lazy_static::lazy_static;
 
 use mongodb::{Client, Database};
 use mongodb::options::{ClientOptions, StreamAddress};
-// Struct mongodb::options::StreamAddress
+use redis::Connection;
 
 #[derive(Deserialize, Debug)]
 pub struct Conf {
@@ -44,21 +43,11 @@ lazy_static! {
         ])
         .build();
         let client = Client::with_options(options).expect("连接mongodb 失败");
-        // let client = Client::with_uri_str(format!("mongodb://{}:{}", "127.0.0.1", 27017)).expect("连接mongodb 失败");
         client.database(CONF.mongodb_name)
     };
+    // pub static ref R_CON
+    pub static ref R_CON:Connection {
+        let client = redis::Client::open("redis://127.0.0.1:6379").expect("url 存在错误");
+        client.get_connection().expect("连接 redis 失败")
+    }
 }
-
-// fn init() {
-//     let a = Conf {
-//         redis_connection: "a",
-//         mongodb_hostname: "a",
-//         mongodb_port: i32,
-//         mongodb_name: "a",
-//         app_hostname: "a",
-//         app_port: "a",
-//         session_name: "a",
-//     };
-//
-//     // format!("{}", a.mongodb_hostname.to_string());
-// }
