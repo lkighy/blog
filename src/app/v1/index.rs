@@ -1,17 +1,15 @@
-use actix_web::get;
-use crate::conf::DB;
+use actix_web::{get, web};
+// use crate::conf::DB;
 use bson::{Bson, doc};
 use mongodb::options::FindOptions;
+use mongodb::Database;
 
 #[get("/")]
-pub async fn index() -> String {
-    // String::from("好")
-    // HttpResponse::Ok().body("hello")
-    let collection = DB.collection("test");
+pub async fn index(db: web::Data<Database>) -> String {
+    let collection = db.collection("test");
     let filter = doc! {"title": "who"};
     let find_options = FindOptions::builder().sort(doc! {"title": 1}).build();
     let cursor = collection.find(filter, find_options).expect("查询失败");
-
 
     for result in cursor {
         match result {

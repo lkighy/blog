@@ -32,7 +32,6 @@ lazy_static! {
     // redis
     // mongodb
     pub static ref DB:Database = {
-        println!("初始化mongodb");
         let options = ClientOptions::builder()
         .hosts(vec![
             StreamAddress {
