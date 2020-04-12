@@ -11,7 +11,7 @@ use mongodb::options::{ClientOptions, StreamAddress};
 
 #[derive(Deserialize, Debug)]
 pub struct Conf {
-    pub redis_connection: &'static str, // redis://127.0.0.1:6379
+    pub redis_addr: &'static str, // redis://127.0.0.1:6379
     pub mongodb_hostname: &'static str, // 127.0.0.1
     pub mongodb_port: u16, // mongodb 27017
     pub mongodb_name: &'static str, // mongodb 数据库名称
