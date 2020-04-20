@@ -7,76 +7,69 @@ use std::time::Duration;
 use std::io::{Read, Write};
 
 pub struct Client {
-    pub conn: TlsStream<TcpStream>,
-    pub tls: bool,
-    // pub server_name: String,
-    pub auth: [String; 2],
-    pub local_name: String,
-    // pub logs: Vec<String>,
-    pub server_logs: Vec<String>,
-    pub client_logs: Vec<String>,
+    pub conn: TlsStream<TcpStream>, // 连接
+    pub tls: bool, // 是否开启 tls 没有用到
+    pub auth: [String; 2], // 账号和密码
+    pub local_name: String, // 。。。
+    pub server_logs: Vec<String>, // 服务器端回应日志
+    pub client_logs: Vec<String>, // 客户端日志
 }
 
 impl Client {
 
     fn cmd(&mut self, expect_code: &str, format: String) -> Result<(), io::Error> {
-        let mut buffer = vec![];
+        let mut buffer = [0; 512];
         self.conn.write(&format.as_bytes())?;
         self.conn.read(&mut buffer)?;
         let msg =  String::from_utf8_lossy(&buffer);
         self.client_logs.push(format);
         self.server_logs.push(msg.to_string());
         if !msg.starts_with(expect_code) {
-            // return Err(msg.into());
             return Err(io::Error::new(io::ErrorKind::Other, msg));
         }
         Ok(())
     }
-    // fn helo(&mut self) -> std::io::Result<()> {
-    //     self.cmd("220", format!("helo {}\r\n", self.local_name))?;
-    //     Ok(())
-    // }
 
     fn ehlo(&mut self) -> std::io::Result<()> {
-        self.cmd("220", format!("ehlo {}\r\n", self.local_name))?;
+        self.cmd("250", format!("ehlo {}\r\n", self.local_name))?;
         Ok(())
     }
 
     fn auth(&mut self) -> std::io::Result<()> {
         // 登录
-        self.cmd("", format!("AUTH LOGIN\r\n"))?;
-        self.cmd("", format!("{}\r\n", encode(&self.auth[0])))?;
-        self.cmd("", format!("{}\r\n", encode(&self.auth[1])))?;
+        self.cmd("334", format!("AUTH LOGIN\r\n"))?;
+        self.cmd("334", format!("{}\r\n", encode(&self.auth[0])))?;
+        self.cmd("235", format!("{}\r\n", encode(&self.auth[1])))?;
         Ok(())
     }
     fn mail(&mut self, from: String) -> std::io::Result<()> {
-        self.cmd("", format!("MAIL from:<{}>\r\n", from))?;
+        self.cmd("250", format!("MAIL from:<{}>\r\n", from))?;
         Ok(())
     }
     fn rcpt(&mut self, to: Vec<String>) -> std::io::Result<()> {
         for v in to {
-            self.cmd("", format!("RCPT to:<{}>\r\n", v))?;
+            self.cmd("250", format!("RCPT to:<{}>\r\n", v))?;
         }
         Ok(())
     }
-    fn data(&mut self, data: data::Data) -> std::io::Result<()> {
-        self.cmd("", format!("data\r\n"))?;
-        self.cmd("", data.to_string())?;
+    fn data(&mut self, data: String) -> std::io::Result<()> {
+        self.cmd("354", format!("data\r\n"))?;
+        self.cmd("250", format!("{}\r\n.\r\n", data))?;
         Ok(())
     }
-    pub fn send_mail(&mut self, from: String, to: Vec<String>, data: data::Data) -> std::io::Result<()> {
+    pub fn send_mail(&mut self, from: String, to: Vec<String>, data: String) -> std::io::Result<()> {
         self.ehlo()?;
         self.auth()?;
         self.mail(from)?;
         self.rcpt(to)?;
         self.data(data)?;
-        self.quit()?;
+        // self.quit()?;
         Ok(())
     }
-    fn quit(&mut self) -> std::io::Result<()> {
-        self.cmd("", format!("\r\n.\r\n"))?;
-        Ok(())
-    }
+    // fn quit(&mut self) -> std::io::Result<()> {
+    //     self.cmd("", format!("\r\n.\r\n"))?;
+    //     Ok(())
+    // }
     pub fn close(&mut self) -> std::io::Result<()> {
         self.conn.shutdown()?;
         Ok(())
@@ -88,19 +81,16 @@ pub fn new(
     addr: &str,
     port: u32,
     auth: [String; 2],
-    // server_name: String,
     local_name: String,
     timeout: Duration,
     ) -> Result<Client, io::Error>
 {
-    // let timeout = Duration::new(10, 0);
-    let stream = match TcpStream::connect(format!("{}:{}", addr, port)) {
+    let mut stream = match TcpStream::connect(format!("{}:{}", addr, port)) {
         Ok(stream) => stream,
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other, format!("创建 TcpStream 失败：{}", e))),
     };
     // 设置读取超时时间
     match stream.set_read_timeout(Some(timeout)) {
-        // return Err(io::Error::new(io::ErrorKind::Other, msg));
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other,format!("设置超时时间失败：{}", e))),
         _ => {},
     }
@@ -113,7 +103,7 @@ pub fn new(
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other, format!("创建 tls 连接失败：{}", e))),
     };
     let mut logs:Vec<String> = vec![];
-    let mut buffer = vec![];
+    let mut buffer = [0; 512];
     match stream.read(&mut buffer) {
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other, format!("套接字读取失败：{}", e))),
         _ => {},
