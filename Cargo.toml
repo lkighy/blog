@@ -17,3 +17,4 @@ lazy_static = "1.4.0"
 bson = "0.14.1" # 辅助 mongodb
 actix-redis = "0.8.1"
 actix-session = "0.3.0"
+dotent = "0.15.0"

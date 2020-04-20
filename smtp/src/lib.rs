@@ -6,13 +6,49 @@ use std::io;
 use std::time::Duration;
 use std::io::{Read, Write};
 
+/// 使用
+///
+/// ```rust,no_run
+/// let mut client = match new(
+///         "smtp.163.com",
+///         587,
+///         ["123@163.com".to_string(), "password".to_string()],
+///         "smtp.163.com".to_string(),
+///         Duration::new(10, 0), // read 读取超时时间，不设置会一直堵塞
+///     ) {
+///         Ok(client) => client,
+///         Err(e) => panic!(e),
+///     };
+///     let data = data::new()
+///         .name("发送人名称".to_string())
+///         .from(String::from("123@163.com"))
+///         .to(vec!["123@qq.com".to_string()])
+///         .subject("标题".to_string())
+///         .body("内容".to_string());
+///
+///     match client.send_mail(
+///         String::from("123@163.com"),
+///         vec!["123@qq.com".to_string()],
+///         data.to_string(),
+///     ) {
+///         Err(e) => panic!(e),
+///         _ => {},
+///     }
+///     client.close();
+///     println!("server_logs\r\n{}\r\n", client.server_logs.join("\r\n"));
+///     println!("client_logs\r\n{}\r\n", client.client_logs.join("\r\n"));
+/// ```
+///
+
 pub struct Client {
     pub conn: TlsStream<TcpStream>, // 连接
     pub tls: bool, // 是否开启 tls 没有用到
     pub auth: [String; 2], // 账号和密码
     pub local_name: String, // 。。。
-    pub server_logs: Vec<String>, // 服务器端回应日志
-    pub client_logs: Vec<String>, // 客户端日志
+    /// 服务器端回应记录日志
+    pub server_logs: Vec<String>,
+    /// 客户端发送记录日志
+    pub client_logs: Vec<String>,
 }
 
 impl Client {
@@ -76,7 +112,6 @@ impl Client {
     }
 }
 
-/// 初始化
 pub fn new(
     addr: &str,
     port: u32,
