@@ -1,10 +1,12 @@
 // 登录
 // 1.
 // 发送验证码
-use atcix_web::{web};
+use actix_web::{post, web};
 use actix_redis::{RedisActor};
+use actix::Addr;
 
-fn send_ckm(redis: web::Data<Addr<RedisActor>>) {
+#[post("/send-ckm")]
+pub async fn send_ckm(_redis: web::Data<Addr<RedisActor>>) -> String {
     // 获取 ip 地址，
     // 查询该 ip 是否已被拉黑
     // 查询该 ip 是否已经提交了三次错误验证码
@@ -16,11 +18,14 @@ fn send_ckm(redis: web::Data<Addr<RedisActor>>) {
     // 将 ip 与 随机码绑定，添加至 redis 库中。
     // 发送邮件到邮箱中。等待输入
     // redis.send()
+    String::from("send-ckm")
 }
 
-fn verify_ckm(redis: web::Data<Addr<RedisActor>>) {
+#[post("/verify-ckm")]
+pub async fn verify_ckm(_redis: web::Data<Addr<RedisActor>>) -> String {
     // 获取 ip
     // 查询该 ip 下的验证码是否相同
+    String::from("verify-ckm")
 }
 
 // redis 关于验证登录这块的参数格式
