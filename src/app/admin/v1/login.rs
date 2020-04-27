@@ -1,20 +1,37 @@
-// 登录
-// 1.
-// 发送验证码
-use actix_web::{post, get, web, HttpRequest};
-// use actix_redis::{RedisActor};
-// use actix::Addr;
+use actix_web::{post, get, web, HttpRequest, HttpResponse, Result};
 
-// use redis;
-// use redis::Commands;
 extern crate redis;
 use redis::Connection;
 use std::net::SocketAddr;
 use self::redis::Commands;
 use std::sync::Mutex;
 
+use serde::{Serialize};
+
+use rand;
+use rand::distributions::Uniform;
+
+use mongodb::Database;
+use mongodb::options::FindOptions;
+use bson::{Bson, doc};
+
+use blog::utils;
+
+#[derive(Serialize)]
+struct ResultData<T> {
+    code: u32,
+    msg: String,
+    data: T,
+}
+
+
+/// 发送验证码到邮箱
 #[get("/send-ckm")]
-pub async fn send_ckm(req: HttpRequest, redis_con: web::Data<Mutex<Connection>>) -> String {
+pub async fn send_ckm(
+    req: HttpRequest,
+    redis_con: web::Data<Mutex<Connection>>,
+    db: web::Data<Database>
+) -> Reuslt<HttpResponse> {
     // 获取 ip 地址，
     let addr = match req.peer_addr() {
         Some(addr) => addr,
@@ -24,29 +41,37 @@ pub async fn send_ckm(req: HttpRequest, redis_con: web::Data<Mutex<Connection>>)
         SocketAddr::V4(ipv4) => format!("{:?}", ipv4.ip()),
         SocketAddr::V6(ipv6) => format!("{:?}", ipv6.ip()),
     };
+
+    // 得到 redis conn
+    let mut con = redis_con.lock().unwrap();
     // todo 1: 查询该 ip 是否已被拉黑
+    let is_black:bool = con.sismember("blacklist", &ip).unwrap();
+    if is_black {
+        return Ok(ResultData {
+            code: 306,
+            msg: String::from(""),
+            data: String::from(""),
+        });
+    }
+    let mut ckm_arr: Vec<u8> = vec![];
 
-    // let _: () = *redis_a.sadd("blacklist", &ip).unwrap();
-    // let _:() = redis_con.lock().unwrap().sadd("blacklist", &ip).unwrap();
-    let mut redis_a = redis_con.lock().unwrap();
-    let _:() = redis_a.sadd("blacklist", &ip).unwrap();
-    // let _:() = redis_con.sadd("blacklist", &ip).unwrap();
+    // todo 2: 生成随机数
+    let step = Uniform::from(48, 58);
+    for _ in 6 {
+        ckm_arr.push(step.sample(&mut rand::thread_rng()));
+    }
+    let ckm = format!("{}", String::from_utf8_lossy(&cmk_arr));
 
-    // let _:() = *redis_con.get_ref().sadd("blacklist", &ip).unwrap();
+    // 得到邮件模板
+    let collection = db.collection("template");
+    let filter = doc! {"title", "smtp"};
+    let find_options = mongodb::options::FindOneOptions::builder().build();
+    let cursor = collection.find(filter, find_options).expect("查询失败");
 
-    // redis.get_ref().
 
-    // 查询该 ip 是否已经提交了三次错误验证码
-    // 查询 redis 缓存中是否有 验证码
-    // 有
-    // 警告: 以提交无法重复生成。并且在 redis 中添加一次警告 三次警告则拉黑该 ip 地址
-    // 无
-    // 生成随机数
-    // 将 ip 与 随机码绑定，添加至 redis 库中。
-    // 发送邮件到邮箱中。等待输入
-    // redis.send()
 
-    format!("{}", ip)
+
+    // utils::smtp::data::new()
 }
 
 #[post("/verify-ckm")]
@@ -60,4 +85,4 @@ pub async fn verify_ckm() -> String {
 // 1. 记录 ip
 // 2. 记录发送次数，错误次数
 // 3. 验证码
-// 4. 
+// 4. `
