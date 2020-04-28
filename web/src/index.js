@@ -8,6 +8,10 @@ import routes from './routes';
 
 Vue.use(VueRouter);
 
+import md from "./plugins/markdown";
+
+Vue.prototype.$md = md;
+
 // Configure router
 const router = new VueRouter({
     routes,
