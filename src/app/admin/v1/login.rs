@@ -1,4 +1,4 @@
-use actix_web::{post, get, web, HttpRequest, HttpResponse, Result};
+use actix_web::{post, get, web, HttpRequest, Responder};
 
 extern crate redis;
 use redis::Connection;
@@ -9,13 +9,14 @@ use std::sync::Mutex;
 use serde::{Serialize};
 
 use rand;
-use rand::distributions::Uniform;
+use rand::distributions::{Distribution, Uniform};
+
 
 use mongodb::Database;
 use mongodb::options::FindOptions;
 use bson::{Bson, doc};
 
-use blog::utils;
+
 
 #[derive(Serialize)]
 struct ResultData<T> {
@@ -31,7 +32,7 @@ pub async fn send_ckm(
     req: HttpRequest,
     redis_con: web::Data<Mutex<Connection>>,
     db: web::Data<Database>
-) -> Reuslt<HttpResponse> {
+) -> impl Responder {
     // 获取 ip 地址，
     let addr = match req.peer_addr() {
         Some(addr) => addr,
@@ -45,34 +46,49 @@ pub async fn send_ckm(
     // 得到 redis conn
     let mut con = redis_con.lock().unwrap();
     // todo 1: 查询该 ip 是否已被拉黑
-    let is_black:bool = con.sismember("blacklist", &ip).unwrap();
-    if is_black {
-        return Ok(ResultData {
+    let is_black:bool = match con.sismember("blacklist", &ip) {
+        Ok(black) =>  black,
+        Err(e) => return web::Json(ResultData {
             code: 306,
-            msg: String::from(""),
-            data: String::from(""),
+            msg: format!("{:?}", e),
+            data: String::new(),
+        }),
+    };
+    if is_black {
+        return web::Json(ResultData {
+            code: 306,
+            msg: String::new(),
+            data: String::new(),
         });
     }
     let mut ckm_arr: Vec<u8> = vec![];
 
     // todo 2: 生成随机数
-    let step = Uniform::from(48, 58);
-    for _ in 6 {
+    let step = Uniform::from(48..58);
+    for _ in 0..6 {
         ckm_arr.push(step.sample(&mut rand::thread_rng()));
     }
-    let ckm = format!("{}", String::from_utf8_lossy(&cmk_arr));
+    // let ckm = format!("{}", String::from_utf8_lossy(&ckm_arr));
 
+    web::Json(ResultData {
+        code: 200,
+        msg: String::new(),
+        data: format!("{}", String::from_utf8_lossy(&ckm_arr)),
+    })
     // 得到邮件模板
-    let collection = db.collection("template");
-    let filter = doc! {"title", "smtp"};
-    let find_options = mongodb::options::FindOneOptions::builder().build();
-    let cursor = collection.find(filter, find_options).expect("查询失败");
-
-
-
+    // let collection = db.collection("template");
+    // let filter = doc! {"title", "smtp"};
+    // let find_options = mongodb::options::FindOneOptions::builder().build();
+    // let cursor = collection.find(filter, find_options).expect("查询失败");
 
     // utils::smtp::data::new()
 }
+
+// 宏测试
+// #[macro_export]
+// macro_rule! ResultJson {
+//     () => {}
+// }
 
 #[post("/verify-ckm")]
 pub async fn verify_ckm() -> String {
