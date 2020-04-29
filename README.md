@@ -1,4 +1,13 @@
-# 博客服务器端
+# 博客系统
+
+rust 作为后端。
+前台使用 vue + router + axios。
+后台使用 vue + element + router + axios。
+
+其他组件
+
+mavonEditor -- 作为编辑器。
+markdown-it 以及其插件作为渲染。
 
 ## 结构
 
