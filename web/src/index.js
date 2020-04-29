@@ -6,7 +6,11 @@ import VueRouter from 'vue-router';
 import App from './App';
 import routes from './routes';
 
+import mavonEditor from 'mavon-editor'
+import 'mavon-editor/dist/css/index.css'
+
 Vue.use(VueRouter);
+Vue.use(mavonEditor)
 
 import md from "./plugins/markdown";
 

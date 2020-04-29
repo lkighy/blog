@@ -1,5 +1,5 @@
 import AppHome from '@/components/AppHome';
-const AppMedium = () => import('@/components/AppMedium');
+const editor = () => import('@/view/editor.vue');
 
 
 const routes = [
@@ -9,9 +9,9 @@ const routes = [
         component: AppHome
     },
     {
-        path: '/medium',
-        name: 'Medium',
-        component: AppMedium
+        path: '/editor',
+        name: 'editor',
+        component: editor
     }
 ];
 

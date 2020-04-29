@@ -1,5 +1,7 @@
 import hljs from 'highlight.js';
 
+import "highlight.js/scss/vs2015.scss";
+
 let md = require('markdown-it')({
     html: false,
     xhtmlOut: false,

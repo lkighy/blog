@@ -2,14 +2,16 @@
   <div class="book">
     <router-link to="/">
       Home
-    </router-link> | <router-link to="/medium">
+    </router-link> | <router-link to="/editor">
       Medium
     </router-link>
     <router-view />
     <img src="@/static/DSCF0866.jpg" alt="">
     <!-- <input type="text" v-model="markdownBody"> -->
     <textarea name="" id="" cols="30" rows="10" v-model="markdownBody" ></textarea>
-    <div class="container" v-html="markdown"></div>
+    <div>
+      <div class="markdown-body" v-html="markdown"></div>
+    </div>
   </div>
 </template>
 <script>
