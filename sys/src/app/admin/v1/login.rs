@@ -70,6 +70,8 @@ pub async fn send_ckm(
     }
     // let ckm = format!("{}", String::from_utf8_lossy(&ckm_arr));
 
+    // ResultJSON!(200, "", String::from_utf8_lossy(&ckm_arr))
+
     web::Json(ResultData {
         code: 200,
         msg: String::new(),
@@ -83,12 +85,6 @@ pub async fn send_ckm(
 
     // utils::smtp::data::new()
 }
-
-// 宏测试
-// #[macro_export]
-// macro_rule! ResultJson {
-//     () => {}
-// }
 
 #[post("/verify-ckm")]
 pub async fn verify_ckm() -> String {
