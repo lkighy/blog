@@ -8,15 +8,11 @@ use std::sync::Mutex;
 
 use serde::{Serialize};
 
-use rand;
-use rand::distributions::{Distribution, Uniform};
-
-
 use mongodb::Database;
 use mongodb::options::FindOptions;
 use bson::{Bson, doc};
 
-
+use crate::utils::{tools, smtp};
 
 #[derive(Serialize)]
 struct ResultData<T> {
@@ -25,11 +21,17 @@ struct ResultData<T> {
     data: T,
 }
 
+#[derive(Deserialize)]
+struct send_ckm {
+    email: String,
+    skm: String,
+}
 
 /// 发送验证码到邮箱
 #[get("/send-ckm")]
 pub async fn send_ckm(
     req: HttpRequest,
+    data: web::Json<send_ckm>,
     redis_con: web::Data<Mutex<Connection>>,
     db: web::Data<Database>
 ) -> impl Responder {
@@ -61,22 +63,16 @@ pub async fn send_ckm(
             data: String::new(),
         });
     }
-    let mut ckm_arr: Vec<u8> = vec![];
 
     // todo 2: 生成随机数
-    let step = Uniform::from(48..58);
-    for _ in 0..6 {
-        ckm_arr.push(step.sample(&mut rand::thread_rng()));
-    }
-    // let ckm = format!("{}", String::from_utf8_lossy(&ckm_arr));
+    let ckm = tools::generate_verify();
+
+    // 从数据库中得到数据，账号密码，通过哪个代理发送，以及代理的端口,最后就是模板了喔
+    let filter = doc!{"email", data.email};
+    // 假设我有这么一个宏，接受db,接受 collection以及一个
 
     // ResultJSON!(200, "", String::from_utf8_lossy(&ckm_arr))
 
-    web::Json(ResultData {
-        code: 200,
-        msg: String::new(),
-        data: format!("{}", String::from_utf8_lossy(&ckm_arr)),
-    })
     // 得到邮件模板
     // let collection = db.collection("template");
     // let filter = doc! {"title", "smtp"};
@@ -84,6 +80,11 @@ pub async fn send_ckm(
     // let cursor = collection.find(filter, find_options).expect("查询失败");
 
     // utils::smtp::data::new()
+    web::Json(ResultData {
+        code: 200,
+        msg: String::new(),
+        data: ckm,
+    })
 }
 
 #[post("/verify-ckm")]

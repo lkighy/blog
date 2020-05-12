@@ -27,6 +27,18 @@
 - mongodb 决定用 mongodb 作为存储的主要数据库， 放飞自我
 - redis - 非关系数据库, 缓存
 
+#### mongodb 数据表以及结构
+
+- 用户表
+- 设置选项表
+- 邮箱信息表 email_info
+    - email 邮箱 唯一
+    - password 
+    - smtp_addr smtp服务器地址
+    - port 端口号
+    - from_name 发件人名称
+- 文章表
+
 ### todo
 
 #### 前台
