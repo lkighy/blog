@@ -46,21 +46,24 @@ pub async fn send_ckm(
     // 得到 redis conn
     let mut con = redis_con.lock().unwrap();
     // todo 1: 查询该 ip 是否已被拉黑
-    let is_black:bool = match con.sismember("blacklist", &ip) {
-        Ok(black) =>  black,
+    match con.sismember("blacklist", &ip) {
+        Ok(black) =>  {
+            if black {
+                return web::Json(ResultData {
+                    code: 306,
+                    msg: String::new(),
+                    data: String::new(),
+                });
+            }
+
+        },
         Err(e) => return web::Json(ResultData {
             code: 306,
             msg: format!("{:?}", e),
             data: String::new(),
         }),
     };
-    if is_black {
-        return web::Json(ResultData {
-            code: 306,
-            msg: String::new(),
-            data: String::new(),
-        });
-    }
+
     let mut ckm_arr: Vec<u8> = vec![];
 
     // todo 2: 生成随机数
