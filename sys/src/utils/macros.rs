@@ -30,3 +30,5 @@ macro_rules! ResultJSON {
         })
     };
 }
+
+// 建立一个宏，用于简略查询
