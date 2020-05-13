@@ -16,6 +16,8 @@ use std::sync::Mutex;
 // mod conf;
 mod app;
 
+pub mod utils;
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     // 转换 byte

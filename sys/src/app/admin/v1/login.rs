@@ -9,10 +9,11 @@ use std::sync::Mutex;
 use serde::{Serialize};
 
 use mongodb::Database;
-use mongodb::options::FindOptions;
-use bson::{Bson, doc};
+// use mongodb::options::FindOptions;
+use bson::{doc};
 
-use crate::utils::{tools, smtp};
+use crate::utils::{tools};
+
 
 #[derive(Serialize)]
 struct ResultData<T> {
@@ -21,17 +22,17 @@ struct ResultData<T> {
     data: T,
 }
 
-#[derive(Deserialize)]
-struct send_ckm {
-    email: String,
-    skm: String,
-}
+// #[derive(Deserialize)]
+// struct send_ckm {
+//     email: String,
+//     skm: String,
+// }
 
 /// 发送验证码到邮箱
 #[get("/send-ckm")]
 pub async fn send_ckm(
     req: HttpRequest,
-    data: web::Json<send_ckm>,
+    // data: web::Json<send_ckm>,
     redis_con: web::Data<Mutex<Connection>>,
     db: web::Data<Database>
 ) -> impl Responder {
@@ -57,7 +58,6 @@ pub async fn send_ckm(
                     data: String::new(),
                 });
             }
-
         },
         Err(e) => return web::Json(ResultData {
             code: 306,
@@ -66,13 +66,14 @@ pub async fn send_ckm(
         }),
     };
 
-    let mut ckm_arr: Vec<u8> = vec![];
-
     // todo 2: 生成随机数
     let ckm = tools::generate_verify();
 
     // 从数据库中得到数据，账号密码，通过哪个代理发送，以及代理的端口,最后就是模板了喔
-    let filter = doc!{"email", data.email};
+    // let coll = db.collection("");
+    // let result = coll.insert_one(doc! {"": 1}, None);
+    // 提取出数据库的查询操作，单独放到一个模块中
+    // let filter = doc!{"email", data.email};
     // 假设我有这么一个宏，接受db,接受 collection以及一个
 
     // ResultJSON!(200, "", String::from_utf8_lossy(&ckm_arr))

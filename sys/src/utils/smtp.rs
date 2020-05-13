@@ -120,7 +120,7 @@ pub fn new(
     timeout: Duration,
     ) -> Result<Client, io::Error>
 {
-    let mut stream = match TcpStream::connect(format!("{}:{}", addr, port)) {
+    let stream = match TcpStream::connect(format!("{}:{}", addr, port)) {
         Ok(stream) => stream,
         Err(e) => return Err(io::Error::new(io::ErrorKind::Other, format!("创建 TcpStream 失败：{}", e))),
     };

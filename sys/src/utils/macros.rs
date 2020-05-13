@@ -31,4 +31,30 @@ macro_rules! ResultJSON {
     };
 }
 
+macro_rules! result_json_handle {
+ ($result:tt, Result) => {
+    match $result {
+        Ok(result) => {
+            result
+        },
+        Err(e) => {
+            return web::Json(ResultData {
+                code: 500,
+                msg: format!("{:?}", e),
+                data: String::new(),
+            })
+        },
+    }
+ };
+ ($option:tt, Option) => {
+     match $option {
+        Some(option) => option,
+        None => return web::Json(ResultData {
+            code: 500,
+            msg: String::from("system error: ip is None"),
+            data: String::new(),
+        })
+     }
+ };
+}
 // 建立一个宏，用于简略查询
