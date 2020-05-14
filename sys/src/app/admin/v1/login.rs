@@ -10,9 +10,10 @@ use serde::{Serialize};
 
 use mongodb::Database;
 // use mongodb::options::FindOptions;
-use bson::{doc};
+use bson::{doc, Document};
 
 use crate::utils::{tools};
+use mongodb::options::FindOptions;
 
 
 #[derive(Serialize)]
@@ -69,7 +70,24 @@ pub async fn send_ckm(
     // todo 2: 生成随机数
     let ckm = tools::generate_verify();
 
+    let coll = db.collection("stmp_info");
     // 从数据库中得到数据，账号密码，通过哪个代理发送，以及代理的端口,最后就是模板了喔
+    let filter = doc! {"email": "1003027913@qq.com"};
+    let find_options = FindOptions::builder().build();
+    let cursor = coll.find(filter, None);
+    let cursor = match cursor {
+        Ok(cursor) => cursor,
+        Err(e) => {
+            return web::Json(ResultData {
+                code: 306,
+                msg: format!("{:?}", e),
+                data:String::new(),
+            });
+        }
+    };
+
+    let result = cursor.collect();
+
     // let coll = db.collection("");
     // let result = coll.insert_one(doc! {"": 1}, None);
     // 提取出数据库的查询操作，单独放到一个模块中
