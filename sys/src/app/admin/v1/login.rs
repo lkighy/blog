@@ -49,23 +49,29 @@ pub async fn send_ckm(
 
     // 得到 redis conn
     let mut con = redis_con.lock().unwrap();
-    // todo 1: 查询该 ip 是否已被拉黑
-    match con.sismember("blacklist", &ip) {
-        Ok(black) =>  {
-            if black {
-                return web::Json(ResultData {
-                    code: 306,
-                    msg: String::new(),
-                    data: String::new(),
-                });
-            }
-        },
-        Err(e) => return web::Json(ResultData {
-            code: 306,
-            msg: format!("{:?}", e),
-            data: String::new(),
-        }),
-    };
+    // todo 1: 通过 email:ip 查询是否以生成验证码
+    // let is_cmk: bool = con.get(format!("{}:{}", email, ip)).expect("hello");
+    let is_cmk= con.get(format!("{}:{}", email, ip));
+    let is_cmk: bool = handle_error_json!{Resule, is_cmk};
+
+    // todo 2: 查询是否生成验证码的时间是否已经经过 1 分钟 -> 提示一分钟后再发送
+    // todo 3: 查询是否以生成三次验证码码 -> 加入临时黑名单
+    // match con.sismember("blacklist", &ip) {
+    //     Ok(black) =>  {
+    //         if black {
+    //             return web::Json(ResultData {
+    //                 code: 306,
+    //                 msg: String::new(),
+    //                 data: String::new(),
+    //             });
+    //         }
+    //     },
+    //     Err(e) => return web::Json(ResultData {
+    //         code: 306,
+    //         msg: format!("{:?}", e),
+    //         data: String::new(),
+    //     }),
+    // };
 
     // todo 2: 生成随机数
     let ckm = tools::generate_verify();
