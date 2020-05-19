@@ -1,7 +1,7 @@
 use actix_web::{post, get, web, HttpRequest, Responder};
 
 extern crate redis;
-use redis::Connection;
+use redis::{Connection, RedisResult};
 use std::net::SocketAddr;
 use self::redis::Commands;
 use std::sync::Mutex;
@@ -49,31 +49,25 @@ pub async fn send_ckm(
 
     // 得到 redis conn
     let mut con = redis_con.lock().unwrap();
-    // todo 1: 通过 email:ip 查询是否以生成验证码
+    // done 1: 通过 email:ip 查询是否以生成验证码
     // let is_cmk: bool = con.get(format!("{}:{}", email, ip)).expect("hello");
-    let is_cmk= con.get(format!("{}:{}", email, ip));
-    let is_cmk: bool = handle_error_json!{Resule, is_cmk};
+    let cmk:RedisResult<String> = con.get(format!("{}:{}", email, ip));
+    if cmk.is_ok() {
+        // 如果存在 则 验证是否已经经过一分钟
+        // locksendcmk:email:ip
+        // done 2: 查询是否生成验证码的时间是否已经经过 1 分钟 -> 提示一分钟后再发送
+        let lock: RedisResult<String> = con.get(format!("locksendcmk:{}:{}", email, ip));
+        if !lock.is_ok() {
+            return web::Json(RedisResult {
+                code: 505,
+                msg: String::from("请一分钟后再发送验证码"),
+                data: String::new(),
+            })
+        }
+    }
+    // todo 3: 查询是否以生成三次验证码码 -> 加入临时黑名单 (暂不实现)
 
-    // todo 2: 查询是否生成验证码的时间是否已经经过 1 分钟 -> 提示一分钟后再发送
-    // todo 3: 查询是否以生成三次验证码码 -> 加入临时黑名单
-    // match con.sismember("blacklist", &ip) {
-    //     Ok(black) =>  {
-    //         if black {
-    //             return web::Json(ResultData {
-    //                 code: 306,
-    //                 msg: String::new(),
-    //                 data: String::new(),
-    //             });
-    //         }
-    //     },
-    //     Err(e) => return web::Json(ResultData {
-    //         code: 306,
-    //         msg: format!("{:?}", e),
-    //         data: String::new(),
-    //     }),
-    // };
-
-    // todo 2: 生成随机数
+    // todo 4: 生成随机数
     let ckm = tools::generate_verify();
 
     let coll = db.collection("stmp_info");

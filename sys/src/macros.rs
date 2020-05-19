@@ -8,7 +8,7 @@ struct ResultData<T> {
     data: T,
 }
 
-
+#[macro_export]
 macro_rules! handle_error_json {
  (Result, $result:tt) => {
     match $result {
