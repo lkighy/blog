@@ -9,12 +9,12 @@ use std::sync::Mutex;
 use serde::{Serialize};
 
 use mongodb::Database;
-// use mongodb::options::FindOptions;
 use bson::{doc, Document};
 
 use crate::utils::{tools};
 use mongodb::options::FindOptions;
 
+use crate::service::operate;
 
 #[derive(Serialize)]
 struct ResultData<T> {
@@ -73,36 +73,10 @@ pub async fn send_ckm(
     let coll = db.collection("stmp_info");
     // 从数据库中得到数据，账号密码，通过哪个代理发送，以及代理的端口,最后就是模板了喔
     let filter = doc! {"email": "1003027913@qq.com"};
-    let find_options = FindOptions::builder().build();
-    let cursor = coll.find(filter, None);
-    let cursor = match cursor {
-        Ok(cursor) => cursor,
-        Err(e) => {
-            return web::Json(ResultData {
-                code: 306,
-                msg: format!("{:?}", e),
-                data:String::new(),
-            });
-        }
-    };
+    operate::find_one(filter, None)
 
     let result = cursor.collect();
 
-    // let coll = db.collection("");
-    // let result = coll.insert_one(doc! {"": 1}, None);
-    // 提取出数据库的查询操作，单独放到一个模块中
-    // let filter = doc!{"email", data.email};
-    // 假设我有这么一个宏，接受db,接受 collection以及一个
-
-    // ResultJSON!(200, "", String::from_utf8_lossy(&ckm_arr))
-
-    // 得到邮件模板
-    // let collection = db.collection("template");
-    // let filter = doc! {"title", "smtp"};
-    // let find_options = mongodb::options::FindOneOptions::builder().build();
-    // let cursor = collection.find(filter, find_options).expect("查询失败");
-
-    // utils::smtp::data::new()
     web::Json(ResultData {
         code: 200,
         msg: String::new(),

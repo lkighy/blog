@@ -10,13 +10,13 @@ use actix_redis::{RedisSession};
 use mongodb::{Client};
 use mongodb::options::{ClientOptions, StreamAddress};
 
-// use redis::Commands;
 use std::sync::Mutex;
 
 // mod conf;
 mod app;
 
 pub mod utils;
+pub mod service;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
