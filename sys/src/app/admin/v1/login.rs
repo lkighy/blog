@@ -16,6 +16,10 @@ use mongodb::options::FindOptions;
 
 use crate::service::operate;
 
+#[macro_use]
+use crate::macros;
+use std::time::Duration;
+
 #[derive(Serialize)]
 struct ResultData<T> {
     code: u32,
@@ -33,7 +37,7 @@ struct ResultData<T> {
 #[get("/send-ckm")]
 pub async fn send_ckm(
     req: HttpRequest,
-    // data: web::Json<send_ckm>,
+    formdata: web::Json<send_ckm>,
     redis_con: web::Data<Mutex<Connection>>,
     db: web::Data<Database>
 ) -> impl Responder {
@@ -72,11 +76,34 @@ pub async fn send_ckm(
 
     let coll = db.collection("stmp_info");
     // 从数据库中得到数据，账号密码，通过哪个代理发送，以及代理的端口,最后就是模板了喔
+    use crate::service::models::SmtpInfo;
     let filter = doc! {"email": "1003027913@qq.com"};
-    operate::find_one(filter, None)
+    let smtp_info: SmtpInfo = handle_error_json!(operate::find_one::<SmtpInfo>(filter, None));
 
-    let result = cursor.collect();
+    // 发送邮箱
+    use crate::utils::{smtp};
+    use crate::utils::smtp::{Client, data};
 
+    let auth = [smtp_info.username.clone(), smtp_info.password.clone()];
+    let addr = smtp_info.addr;
+
+    // let clent = smtp::new(&smtp_info.addr, &smtp_into.port, [smtp_info.username.clone(), smtp_info.passowrd.clone()], smtp.name.clone);
+    let mut client: Client = handle_error_json!(Result, smtp::new(
+        &smtp_info.addr,
+        smtp_info.port,
+        auth,
+        smtp_info.name,
+        Duration::new(10, 0),
+    ));
+
+    let body = data::new()
+        .name(smtp_info.name)
+        .from(smtp_info.email)
+        .to(vec![email])
+        .subject("标题".to_string())
+        .body(format!("{}", ckm));
+
+    client.send_mail(smtp_info.email.clone(), vec![email], body.to_string());
     web::Json(ResultData {
         code: 200,
         msg: String::new(),

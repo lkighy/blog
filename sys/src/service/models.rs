@@ -10,12 +10,13 @@ use bson::ordered::OrderedDocument;
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-struct SmtpInfo {
+pub struct SmtpInfo {
     #[serde(rename = "_id")]
     pub id: bson::oid::ObjectId,
     pub email: String, // 唯一
     pub addr: String, // smtp
-    pub port: String, // smtp
+    #[serde(with = "bson::compat::u2f")]
+    pub port: u32, // smtp
     pub name: String, // 发送人名称
     pub username: String, // smtp 账号
     pub password: String, // smtp 密码

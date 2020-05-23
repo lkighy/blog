@@ -18,6 +18,9 @@ mod app;
 pub mod utils;
 pub mod service;
 
+#[macro_use]
+pub mod macros;
+
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     // 转换 byte
