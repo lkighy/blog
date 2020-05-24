@@ -2,10 +2,10 @@ use actix_web::web;
 use serde::{Serialize};
 
 #[derive(Serialize)]
-struct ResultData<T> {
-    code: u32,
-    msg: String,
-    data: T,
+pub struct ResultData<T> {
+    pub code: u32,
+    pub msg: String,
+    pub data: T,
 }
 
 #[macro_export]

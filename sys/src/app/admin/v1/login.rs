@@ -4,34 +4,23 @@ extern crate redis;
 use redis::{Connection, RedisResult};
 use std::net::SocketAddr;
 use self::redis::Commands;
-use std::sync::Mutex;
 
 use serde::{Serialize};
 
 use mongodb::Database;
 use bson::{doc, Document};
 
-use crate::utils::{tools};
 use mongodb::options::FindOptions;
 
+use crate::utils::{tools};
 use crate::service::operate;
 
-#[macro_use]
-use crate::macros;
+use crate::macros::ResultData;
+
 use std::time::Duration;
+use std::sync::Mutex;
 
-#[derive(Serialize)]
-struct ResultData<T> {
-    code: u32,
-    msg: String,
-    data: T,
-}
 
-// #[derive(Deserialize)]
-// struct send_ckm {
-//     email: String,
-//     skm: String,
-// }
 
 /// 发送验证码到邮箱
 #[get("/send-ckm")]

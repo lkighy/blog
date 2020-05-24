@@ -18,7 +18,6 @@ mod app;
 pub mod utils;
 pub mod service;
 
-#[macro_use]
 pub mod macros;
 
 #[actix_rt::main]
