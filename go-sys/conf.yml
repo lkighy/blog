@@ -1,0 +1,15 @@
+# mongodb
+mongo_host: 127.0.0.1
+mongo_port: 27017
+mongo_db: text
+# redis
+redis_host: 127.0.0.1
+redis_port: 6397
+# smtp
+smtp_host: smtp.163.com
+smtp_port: 465
+smtp_email: 100@qq.com # 邮件的邮箱
+smtp_name: 小白 # 发送者名称
+smtp_auth: 100@qq.com # 认证账号
+smtp_pawd: 123 # 认证密码
+smtp_test: 100@qq.com # 测试邮箱

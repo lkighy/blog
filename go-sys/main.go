@@ -4,11 +4,11 @@ import (
 	stdContext "context"
 	"github.com/kataras/iris/v12"
 	"go-sys/app"
+	"go-sys/conf"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"go-sys/conf"
 )
 
 func main() {

@@ -11,12 +11,14 @@ type User struct {
 	Username string
 }
 
-func FindOneUser(email string) {
+// 查询
+func FindOneUserByEmail(email string) (User, error) {
 	coll := conf.DB.C("user")
 
-	result := User{}
-	if err := coll.Find(bson.M{"email": email}).One(&result); err != nil {
+	user := User{}
+	err := coll.Find(bson.M{"email": email}).One(&user)
 
-	}
-
+	return user, err
 }
+
+// 修改
