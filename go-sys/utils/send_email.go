@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"fmt"
 	"go-sys/conf"
-	"net/smtp"
+	"gopkg.in/gomail.v2"
 )
 
 // 发送邮件
@@ -11,18 +10,14 @@ import (
 // name: 使用的名称
 // to: 发送给谁
 // body: 正文
-func SendEmail(email, body string) {
+func SendEmail(email, title,  body string) error {
 	// todo 1: 获取 发送者的 smtp
-	a := smtp.PlainAuth("", conf.SmtpAuth, conf.SmtpPawd, conf.SmtpHost)
-	to := []string{email}
-	msg :=
-	smtp.SendMail(fmt.Sprintf("%s:%s", conf.SmtpHost, conf.SmtpPort), a, conf.SmtpEmail, to, []byte(body))
+	m := gomail.NewMessage()
+	m.SetHeader("From", conf.SmtpEmail)
+	m.SetHeader("To", email)
+	m.SetHeader("Subject", title)
+	m.SetHeader("text/html", body)
+	d := gomail.NewDialer(conf.SmtpHost, conf.SmtpPort, conf.SmtpAuth, conf.SmtpPawd)
+	return d.DialAndSend(m)
 }
 
-func mailMsg() {
-	form := "form: name <100@qq.com>"
-	to := "to: <100@qq.com>\r\nto: <100@qq.com>\r\nto: <100@qq.com>"
-	subject := "subject: 这是标题"
-	body := "这就是内容了喔"
-	msg := fmt.Sprintf("%s\r\n%s\r\n%s\r\n%s\r\n", form, to, subject, body)
-}

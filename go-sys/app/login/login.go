@@ -7,11 +7,13 @@ import (
 	"go-sys/utils"
 	"gopkg.in/mgo.v2"
 	"net"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/kataras/iris/v12"
 )
 
+// 发送验证码
 func SendCkm(ctx iris.Context) {
 	// 获取 ip 地址
 	var data struct {
@@ -32,13 +34,9 @@ func SendCkm(ctx iris.Context) {
 	addr := ctx.Request().RemoteAddr
 	ip, _, err := net.SplitHostPort(addr)
 	if err != nil {
-		ctx.JSON(iris.Map{
-			"code": 500,
-			"msg":  "系统错误",
-		})
+		ctx.JSON(iris.Map{ "code": 500, "msg":  "系统错误"})
 		return
 	}
-
 	// 查询是否之前是否发送过邮箱
 	_, err = conf.Client.Get(conf.Client.Context(), fmt.Sprintf("locksendcmk:%s:%s", data.email, ip)).Result()
 	// 判断值存不存在，存在，且 err 不为 nil，则
@@ -51,22 +49,29 @@ func SendCkm(ctx iris.Context) {
 	// todo 1: 生成发送的正文
 	// 从 数据库中得到模板
 	template := "%s" // 如果无法从数据库中获取模板，则使用默认模板
+	title := "验证码"
 	emailTemplate, err := service.FindOneEmailTemplateByEmail(data.email)
-	if err == mgo.ErrNotFound || err != nil  {
+	if err == nil  {
 		template = emailTemplate.Template
+		title = emailTemplate.Title
 	}
 	// todo 2: 发送邮件
-	utils.SendEmail(data.email, fmt.Sprintf(template, ckm))
-	// todo 2: 将验证码记录至 redis 中
+	if err = utils.SendEmail(data.email, title, fmt.Sprintf(template, ckm)); err != nil {
+		ctx.JSON(iris.Map{"code": "505", "msg": "邮件发送失败，请联系管理员"})
+		return
+	}
+	// todo 2: 将验证码记录至 redis 中, 并设置过期时间为 5 分钟
+	err = conf.Client.Set(conf.Client.Context(), fmt.Sprintf("%s", ""), ckm, 5 * 60 * time.Second).Err()
+	if err != nil {
+		ctx.JSON(iris.Map{"code": "505", "msg": "系统错误"})
+		return
+	}
 	// todo 3: 返回处理，表示已经发送
-
-	// 从新定义一下，获取smtp 账号应该由自己线下定义才对，否则将有大问题
-
-	ctx.JSON(iris.Map{
-		"code": 200,
-		"data": iris.Map{
-			"ip":  ip,
-			"cmk": ckm,
-		},
+	ctx.JSON(iris.Map{ "code": 200, "msg": "邮件已发送，请耐心等待邮件发送到您的邮箱中",
 	})
+}
+
+// 验证码登录
+func CkmLogin(ctx iris.Context)  {
+
 }

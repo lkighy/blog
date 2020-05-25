@@ -8,6 +8,7 @@ import (
 // 邮件模板
 type EmailTemplate struct {
 	Email string // 邮箱
+	Title string // 标题
 	// 例如: <h1>验证码</h1><p>这是您的验证码%s</p>
 	Template string // 模板
 }
