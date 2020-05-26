@@ -18,7 +18,7 @@ import (
 func SendCkm(ctx iris.Context) {
 	// 获取 ip 地址
 	var data struct {
-		email string `json:"email" validate:"required"`
+		Email string `json:"email" validate:"required"`
 	}
 	if err := ctx.ReadJSON(&data); err != nil {
 		ctx.JSON(iris.Map{"code": 505, "msg": "缺少参数"})
@@ -26,9 +26,11 @@ func SendCkm(ctx iris.Context) {
 	}
 
 	// 判断该邮箱是否存在
-	_, err := service.FindOneUserByEmail(data.email)
+	_, err := service.FindOneUserByEmail(data.Email)
+	fmt.Println("user: ", data.Email)
 	if err == mgo.ErrNotFound {
 		ctx.JSON(iris.Map{"code": 505, "msg": "邮箱不存在"})
+		return
 	}
 
 	// 获取 ip 地址
@@ -39,7 +41,7 @@ func SendCkm(ctx iris.Context) {
 		return
 	}
 	// 查询是否之前是否发送过邮箱
-	_, err = conf.Redis.Get(conf.Redis.Context(), fmt.Sprintf("lockcmk:%s:%s", data.email, ip)).Result()
+	_, err = conf.Redis.Get(conf.Redis.Context(), fmt.Sprintf("lockcmk:%s:%s", data.Email, ip)).Result()
 	// 判断值存不存在，存在，且 err 不为 nil，则
 	if err != redis.Nil && err == nil {
 		ctx.JSON(iris.Map{"code": 505, "msg": "请一分钟后再发送验证码"})
@@ -51,23 +53,26 @@ func SendCkm(ctx iris.Context) {
 	// 从 数据库中得到模板
 	template := "%s" // 如果无法从数据库中获取模板，则使用默认模板
 	title := "验证码"
-	emailTemplate, err := service.FindOneEmailTemplateByEmail(data.email)
-	if err == nil  {
+	emailTemplate, err := service.FindOneEmailTemplateByEmail(data.Email)
+	if err == nil && err != mgo.ErrNotFound  {
 		template = emailTemplate.Template
 		title = emailTemplate.Title
 	}
 	// todo 2: 发送邮件
-	if err = utils.SendEmail(data.email, title, fmt.Sprintf(template, ckm)); err != nil {
+	if err = utils.SendEmail(data.Email, title, fmt.Sprintf(template, ckm)); err != nil {
+		fmt.Println("发送邮件：", err)
 		ctx.JSON(iris.Map{"code": 500, "msg": "邮件发送失败，请联系管理员"})
 		return
 	}
+	fmt.Println("CKM:", ckm)
 	// todo 2: 将验证码记录至 redis 中, 并设置过期时间为 5 分钟
-	err = conf.Redis.Set(conf.Redis.Context(), fmt.Sprintf("ckm:%s:%s", data.email, ip), ckm, 5 * 60 * time.Second).Err()
+	err = conf.Redis.Set(conf.Redis.Context(), fmt.Sprintf("ckm:%s:%s", data.Email, ip), ckm, 5 * 60 * time.Second).Err()
 	if err != nil {
+		fmt.Println("error: ", err)
 		ctx.JSON(iris.Map{"code": 500, "msg": "系统错误"})
 		return
 	}
-	err = conf.Redis.Set(conf.Redis.Context(), fmt.Sprintf("lockckm:%s:%s", data.email, ip), ckm, 60 * time.Second).Err()
+	err = conf.Redis.Set(conf.Redis.Context(), fmt.Sprintf("lockckm:%s:%s", data.Email, ip), ckm, 60 * time.Second).Err()
 	if err != nil {
 		ctx.JSON(iris.Map{"code": 500, "msg": "系统错误"})
 		return
@@ -80,18 +85,18 @@ func SendCkm(ctx iris.Context) {
 // 验证码登录
 func CkmLogin(ctx iris.Context)  {
 	var data struct {
-		email string `json:"email" validate:"required"`
-		ckm string `json:"ckm" validate:"required"`
+		Email string `json:"email" validate:"required"`
+		Ckm string `json:"ckm" validate:"required"`
 	}
 	if err := ctx.ReadJSON(&data); err != nil {
 		ctx.JSON(iris.Map{"code": 505, "msg": "缺少参数"})
 		return
 	}
-
 	// 判断该邮箱是否存在
-	_, err := service.FindOneUserByEmail(data.email)
+	_, err := service.FindOneUserByEmail(data.Email)
 	if err == mgo.ErrNotFound {
 		ctx.JSON(iris.Map{"code": 505, "msg": "邮箱不存在"})
+		return
 	}
 
 	// 获取 ip 地址
@@ -103,23 +108,30 @@ func CkmLogin(ctx iris.Context)  {
 	}
 
 	// 验证验证码是否正确
-	ckm, err := conf.Redis.Get(conf.Redis.Context(), fmt.Sprintf("cmk:%s:%s", data.email, ip)).Result()
-	if data.ckm != ckm {
+	ckm, err := conf.Redis.Get(conf.Redis.Context(), fmt.Sprintf("ckm:%s:%s", data.Email, ip)).Result()
+	if err != nil || err == redis.Nil {
+		ctx.JSON(iris.Map{"code": 505, "msg": "验证码过期"})
+		return
+	}
+	if data.Ckm != ckm {
 		ctx.JSON(iris.Map{"code": 505, "msg": "验证码错误"})
 		return
 	}
 
 	// 生成 jwt
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
-		"email": data.email,
+		"email": data.Email,
 		"iss": conf.JwtExp,
 		"ip": ip,
 	    "exp":time.Now().Add(6*time.Hour * time.Duration(1)).Unix(),
 	})
-	auth, err := token.SignedString([]byte(conf.JwtKey))
+
+	//auth, err := token.SignedString([]byte("123456"))
+	auth, err := token.SigningString()
 	if err != nil {
-		ctx.JSON(iris.Map{"code": 500, "msg": "系统错误"})
+		fmt.Println("err: ", err)
+		ctx.JSON(iris.Map{"code": 500, "msg": "生成token失败"})
 		return
 	}
-	ctx.JSON(iris.Map{"code": 200, "data": iris.Map{"token": auth}})
+	ctx.JSON(iris.Map{"code": 200, "data": iris.Map{"token": "bears "+auth}})
 }

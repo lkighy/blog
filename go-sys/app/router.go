@@ -13,5 +13,6 @@ func Router() *iris.Application {
 	app.Use(recover.New())
 	app.Use(logger.New())
 	app.Handle("GET", "/send-ckm", login.SendCkm)
+	app.Handle("POST", "/ckm-login", login.CkmLogin)
 	return app
 }

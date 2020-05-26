@@ -10,27 +10,27 @@ import (
 
 type Config struct {
 	//mongodb
-	MongoHost string // mongodb 地址
-	MongoPort int // mongodb 端口号
-	MongoDB string // 使用的数据库
-	MongoAuth string // mongodb 账号
-	MongoPawd string // mongodb 密码
+	MongoHost string `yaml:"mongo_host"`// mongodb 地址
+	MongoPort int `yaml:"mongo_port"`// mongodb 端口号
+	MongoDB string `yaml:"mongodb"`// 使用的数据库
+	MongoAuth string `yaml:"mongo_auth"'`// mongodb 账号
+	MongoPawd string `yaml:"mongo_pawd"`// mongodb 密码
 	//redis
-	RedisHost string //
-	RedisPort int
+	RedisHost string `yaml:"redis_host"`//
+	RedisPort int `yaml:"redis_port"`
 	// smtp 相关
-	SmtpHost string
-	SmtpPort int
-	SmtpName string
-	SmtpAuth string
-	SmtpEmail string
-	SmtpPawd string
-	SmtpTest string // smtp 使用的测试账号
+	SmtpHost string `yaml:"smtp_host"`
+	SmtpPort int `yaml:"smtp_port"`
+	SmtpName string `yaml:"smtp_name"`
+	SmtpAuth string `yaml:"smtp_auth"`
+	SmtpEmail string `yaml:"smtp_email"`
+	SmtpPawd string `yaml:"smtp_pawd"`
+	SmtpTest string `yaml:"smtp_test"`// smtp 使用的测试账号
 	// app
-	AppName string
-	AppAddr string
-	JwtKey string
-	JwtExp int
+	AppName string `yaml:"app_name"`
+	AppAddr string `yaml:"app_addr"`
+	JwtKey string `yaml:"jwt_key"`
+	JwtExp int `yaml:"jwt_exp"`
 }
 
 var DB *mgo.Database
@@ -60,14 +60,15 @@ var JwtExp int
 
 func init() {
 	// 初始化配置信息
-	yml , err := ioutil.ReadFile("./conf.yml")
+	yml , err := ioutil.ReadFile("conf.yml")
 	if err != nil {
-		panic("读取配置失败")
+		panic(fmt.Sprintln("读取配置失败, ERROR:", err))
 	}
 	conf := Config{}
 	err = yaml.Unmarshal(yml, &conf)
+	//fmt.Println(conf)
 	if err != nil {
-		panic("反序列化配")
+		panic(fmt.Sprintln("反序列化配失败，ERROR:", err))
 	}
 	// mongodb
 	MongoHost = conf.MongoHost
@@ -96,6 +97,8 @@ func init() {
 	session, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%d", MongoHost, MongoPort))
 
 	if err != nil {
+		//fmt.Printf("mongodb://%s:%d", MongoHost, MongoPort)
+		//fmt.Println("err: ", err)
 		panic("mongodb 服务器连接错误")
 	}
 	DB = session.DB(MongoDB)
