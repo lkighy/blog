@@ -33,10 +33,11 @@ func main() {
 			ctx, cancel := stdContext.WithTimeout(stdContext.Background(), timeout)
 			defer cancel()
 			r.Shutdown(ctx)
-			conf.Client.Close()
+			conf.Redis.Close()
+			conf.Session.Close()
 		}
 	}()
-	r.Run(iris.Addr("127.0.0.1:8080"))
+	r.Run(iris.Addr(conf.AppAddr))
 
 	//app := iris.New()
 	//app.Logger().SetLevel("debug")

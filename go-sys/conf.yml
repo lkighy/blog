@@ -13,3 +13,8 @@ smtp_name: 小白 # 发送者名称
 smtp_auth: 100@qq.com # 认证账号
 smtp_pawd: 123 # 认证密码
 smtp_test: 100@qq.com # 测试邮箱
+# app
+app_addr: "127.0.0.1:8080"
+app_name: "青丘"
+jwt_exp: 6 #小时
+jwt_key: "f8533f002c2a430ea33b460f928bff67"

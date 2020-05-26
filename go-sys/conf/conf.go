@@ -1,6 +1,7 @@
 package conf
 
 import (
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/yaml.v2"
@@ -8,11 +9,13 @@ import (
 )
 
 type Config struct {
+	//mongodb
 	MongoHost string // mongodb 地址
 	MongoPort int // mongodb 端口号
 	MongoDB string // 使用的数据库
 	MongoAuth string // mongodb 账号
 	MongoPawd string // mongodb 密码
+	//redis
 	RedisHost string //
 	RedisPort int
 	// smtp 相关
@@ -23,12 +26,17 @@ type Config struct {
 	SmtpEmail string
 	SmtpPawd string
 	SmtpTest string // smtp 使用的测试账号
+	// app
+	AppName string
+	AppAddr string
+	JwtKey string
+	JwtExp int
 }
 
 var DB *mgo.Database
 var Session *mgo.Session
 
-var Client *redis.Client
+var Redis *redis.Client
 
 var MongoHost string // mongodb 地址
 var MongoPort int // mongodb 地址
@@ -45,6 +53,11 @@ var SmtpAuth string
 var SmtpPawd string
 var SmtpTest string // smtp 使用的测试账号
 
+var AppName string
+var AppAddr string
+var JwtKey string
+var JwtExp int
+
 func init() {
 	// 初始化配置信息
 	yml , err := ioutil.ReadFile("./conf.yml")
@@ -56,13 +69,16 @@ func init() {
 	if err != nil {
 		panic("反序列化配")
 	}
+	// mongodb
 	MongoHost = conf.MongoHost
 	MongoPort = conf.MongoPort
 	MongoDB = conf.MongoDB
 	MongoAuth = conf.MongoAuth
 	MongoPawd = conf.MongoPawd
+	// redis
 	RedisHost = conf.RedisHost
 	RedisPort = conf.RedisPort
+	// stmp
 	SmtpHost = conf.SmtpHost
 	SmtpPort = conf.SmtpPort
 	SmtpEmail = conf.SmtpEmail
@@ -70,18 +86,25 @@ func init() {
 	SmtpAuth = conf.SmtpAuth
 	SmtpPawd = conf.SmtpPawd
 	SmtpTest = conf.SmtpTest
+	// app
+	AppAddr = conf.AppAddr
+	JwtKey = conf.JwtKey
+	AppName = conf.AppName
+	JwtExp = conf.JwtExp
 
 	// 初始化 mongodb
-	session, err := mgo.Dial("mongodb://127.0.0.1:27017")
+	session, err := mgo.Dial(fmt.Sprintf("mongodb://%s:%d", MongoHost, MongoPort))
+
 	if err != nil {
 		panic("mongodb 服务器连接错误")
 	}
-	DB = session.DB("test")
+	DB = session.DB(MongoDB)
 	Session = session
 
 	// 初始化 redis
-	Client = redis.NewClient(&redis.Options{
-		Addr: "localhost:6397",
+	Redis = redis.NewClient(&redis.Options{
+		//Addr: "localhost:6397",
+		Addr: fmt.Sprintf("%s:%d", RedisHost, RedisPort),
 		Password: "",
 		DB: 0,
 	})
