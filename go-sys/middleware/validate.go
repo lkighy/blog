@@ -1,20 +1,19 @@
 package middleware
 
-import "github.com/kataras/iris"
+import (
+	"github.com/dgrijalva/jwt-go"
+	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
+	"go-sys/conf"
+)
 
-// 登录验证中间件
-// 没有登录
-var NotLogin = iris.Map{"code": 305, "msg": "请先登录"}
+// 校验验证 jwt
+func JWTMiddleware() *jwtmiddleware.Middleware {
+	return jwtmiddleware.New(jwtmiddleware.Config{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte(conf.JwtKey), nil
+		},
+		SigningMethod: jwt.SigningMethodES256,
+	})
+}
 
-// 登录过期
-var ExceedLogin = iris.Map{"code": 306, "msg": "登录过期"}
-
-// 500
-var ServerError = iris.Map{"code": 500, "msg": "服务器错误"}
-
-// 504
-var ValidateError = iris.Map{"code": 500, "msg": "验证码错误"}
-
-// 05
-
-
+//

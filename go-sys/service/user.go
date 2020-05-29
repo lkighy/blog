@@ -11,6 +11,11 @@ type User struct {
 	Username string
 }
 
+func (u *User) FindOne(document interface{}) error {
+	coll := conf.DB.C("user")
+	return coll.Find(document).One(u)
+}
+
 // 查询
 func FindOneUserByEmail(email string) (User, error) {
 	coll := conf.DB.C("user")

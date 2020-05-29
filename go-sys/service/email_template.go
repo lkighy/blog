@@ -13,6 +13,11 @@ type EmailTemplate struct {
 	Template string // 模板
 }
 
+func (t *EmailTemplate) FindOne(document interface{}) error {
+	coll := conf.DB.C("emailTemplate")
+	return coll.Find(document).One(t)
+}
+
 // 通过邮箱查询邮件模板
 func FindOneEmailTemplateByEmail(email string) (EmailTemplate, error){
 	coll := conf.DB.C("emailTemplate")
