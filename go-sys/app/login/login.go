@@ -2,7 +2,6 @@ package login
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"go-sys/api"
 	"go-sys/conf"
 	"go-sys/service"
@@ -23,7 +22,7 @@ func SendCkm(ctx iris.Context) {
 	}
 	if err := ctx.ReadJSON(&data); err != nil {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "缺少参数"})
-		api.ErrorFail(ctx, "缺少参数", err)
+		api.Fail(ctx, "缺少参数", err)
 		return
 	}
 
@@ -32,7 +31,7 @@ func SendCkm(ctx iris.Context) {
 	fmt.Println("user: ", data.Email)
 	if err == mgo.ErrNotFound {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "邮箱不存在"})
-		api.ErrorFail(ctx, "邮箱不存在", err)
+		api.Fail(ctx, "邮箱不存在", err)
 		return
 	}
 
@@ -41,7 +40,7 @@ func SendCkm(ctx iris.Context) {
 	ip, _, err := net.SplitHostPort(addr)
 	if err != nil {
 		//ctx.JSON(iris.Map{ "code": 500, "msg":  "系统错误"})
-		api.ErrorFail(ctx, "系统错误", err)
+		api.Fail(ctx, "系统错误", err)
 		return
 	}
 	// 查询是否之前是否发送过邮箱
@@ -49,7 +48,7 @@ func SendCkm(ctx iris.Context) {
 	// 判断值存不存在，存在，且 err 不为 nil，则
 	if err != redis.Nil && err == nil {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "请一分钟后再发送验证码"})
-		api.ErrorFail(ctx, "请一分钟后再发送验证码", err)
+		api.Fail(ctx, "请一分钟后再发送验证码", err)
 		return
 	}
 	// 生成验证码
@@ -77,13 +76,13 @@ func SendCkm(ctx iris.Context) {
 	err = conf.Redis.Set(conf.Redis.Context(), fmt.Sprintf("ckm:%s:%s", data.Email, ip), ckm, 5 * 60 * time.Second).Err()
 	if err != nil {
 		//ctx.JSON(iris.Map{"code": 500, "msg": "系统错误"})
-		api.ErrorFail(ctx, "系统错误", err)
+		api.Fail(ctx, "系统错误", err)
 		return
 	}
 	err = conf.Redis.Set(conf.Redis.Context(), fmt.Sprintf("lockckm:%s:%s", data.Email, ip), ckm, 60 * time.Second).Err()
 	if err != nil {
 		//ctx.JSON(iris.Map{"code": 500, "msg": "系统错误"})
-		api.ErrorFail(ctx, "系统错误", err)
+		api.Fail(ctx, "系统错误", err)
 		return
 	}
 	// todo 3: 返回处理，表示已经发送
@@ -102,14 +101,14 @@ func CkmLogin(ctx iris.Context)  {
 	ctx.Next()
 	if err := ctx.ReadJSON(&data); err != nil {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "缺少参数"})
-		api.ErrorFail(ctx, "缺少参数", err)
+		api.Fail(ctx, "缺少参数", err)
 		return
 	}
 	// 判断该邮箱是否存在
 	_, err := service.FindOneUserByEmail(data.Email)
 	if err == mgo.ErrNotFound {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "邮箱不存在"})
-		api.ErrorFail(ctx, "邮箱不存在", err)
+		api.Fail(ctx, "邮箱不存在", err)
 		return
 	}
 
@@ -118,7 +117,7 @@ func CkmLogin(ctx iris.Context)  {
 	ip, _, err := net.SplitHostPort(addr)
 	if err != nil {
 		//ctx.JSON(iris.Map{ "code": 500, "msg":  "系统错误"})
-		api.ErrorFail(ctx, "系统错误", err)
+		api.Fail(ctx, "系统错误", err)
 		return
 	}
 
@@ -126,12 +125,12 @@ func CkmLogin(ctx iris.Context)  {
 	ckm, err := conf.Redis.Get(conf.Redis.Context(), fmt.Sprintf("ckm:%s:%s", data.Email, ip)).Result()
 	if err != nil || err == redis.Nil {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "验证码过期"})
-		api.ErrorFail(ctx, "验证码过期", err)
+		api.Fail(ctx, "验证码过期", err)
 		return
 	}
 	if data.Ckm != ckm {
 		//ctx.JSON(iris.Map{"code": 505, "msg": "验证码错误"})
-		api.ErrorFail(ctx, "验证码错误", err)
+		api.Fail(ctx, "验证码错误", err)
 		return
 	}
 
@@ -139,17 +138,12 @@ func CkmLogin(ctx iris.Context)  {
 	// 通过邮箱验证验证用户，
 	// 通过ip来保证同一时间只能在一台电脑上登录，
 	// 通过过期时间来确保超出时间后它不在有效
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"email": data.Email, // 记录邮箱
-		"iss": conf.AppName, // 发行人
-		"ip": ip, // ip 地址
-	    "exp":time.Now().Add(6*time.Hour * time.Duration(1)).Unix(), // 过期时间
-	})
+	token := api.NewJwt(data.Email, ip)
 
 	auth, err := token.SignedString([]byte(conf.JwtKey))
 	//auth, err := token.SigningString()
 	if err != nil {
-		api.ErrorFail(ctx, "生成token失败：", err)
+		api.Fail(ctx, "生成token失败：", err)
 		return
 	}
 	//ctx.JSON(iris.Map{"code": 200, "data": iris.Map{"token": "bears "+auth}})

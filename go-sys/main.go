@@ -14,6 +14,8 @@ import (
 func main() {
 	r := app.Router()
 
+	r.Logger().SetLevel("debug")
+
 	go func() {
 		ch := make(chan os.Signal, 1)
 		signal.Notify(ch,

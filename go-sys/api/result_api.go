@@ -15,8 +15,9 @@ func OK(ctx iris.Context, msg string, data interface{}) {
 }
 
 // 401
-func Unauthorized(ctx iris.Context, msg string) {
-	apiOutput(ctx, 401, msg, "")
+func Unauthorized(ctx iris.Context, msg string, err error) {
+	//apiOutput(ctx, 401, msg, "")
+	apiOutput(ctx, 401, fmt.Sprintf("%s:%v", msg, err), "")
 }
 
 func WaringFailUnauthorized(ctx iris.Context, msg string, err error) {
@@ -28,8 +29,8 @@ func ErrorFailUnauthorized(ctx iris.Context, msg string, err error) {
 }
 
 // error 500
-func Fail(ctx iris.Context, msg string) {
-	apiOutput(ctx, 500, msg, "")
+func Fail(ctx iris.Context, msg string, err error) {
+	apiOutput(ctx, 500, fmt.Sprintf("%s:%v", msg, err), "")
 }
 
 func WaringFail(ctx iris.Context, msg string, err error) {

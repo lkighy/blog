@@ -3,6 +3,8 @@ package middleware
 import (
 	"github.com/dgrijalva/jwt-go"
 	jwtmiddleware "github.com/iris-contrib/middleware/jwt"
+	"github.com/kataras/iris/v12/context"
+	"go-sys/api"
 	"go-sys/conf"
 )
 
@@ -12,7 +14,11 @@ func JWTMiddleware() *jwtmiddleware.Middleware {
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
 			return []byte(conf.JwtKey), nil
 		},
-		SigningMethod: jwt.SigningMethodES256,
+		SigningMethod: jwt.SigningMethodHS256,
+		ErrorHandler: func(ctx context.Context, err error) {
+			api.Unauthorized(ctx, "用户未认证", err)
+			//ctx.JSON(iris.Map{"code": 401, "msg": "Unauthorized", "data": err})
+		},
 	})
 }
 
